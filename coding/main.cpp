@@ -1,38 +1,37 @@
+#include <iostream>
 #include <queue>
 #include <thread>
-#include <iostream>
+#include <atomic>
 
-int counter = 0;
-bool done = false;
-
+std::atomic<int> counter(0);
+std::atomic<bool> done(false);
 std::queue<int> goods;
 
+
 void producer() {
-    std::cout << "Starting producer..." << std::endl;
+    std::cout << "Starting producer...\n";
 
     for (int i = 0; i < 500; ++i) {
         goods.push(i);
-        counter++;
+        counter.fetch_add(1, std::memory_order_relaxed);
     }
 
-    done = true;
-
-    std::cout << "Finished producer..." << std::endl;
+    done.store(true, std::memory_order_release);
+    std::cout << "Finished producer...\n";
 }
 
 void consumer() {
-    std::cout << "Starting consumer..." << std::endl;
+    std::cout << "Starting consumer...\n";
 
-    while (!done) {
-        while (!goods.empty()) {
+    while (!done.load(std::memory_order_acquire) || counter.load(std::memory_order_relaxed) > 0) {
+        if (!goods.empty()) {
             goods.pop();
-            counter--;
+            counter.fetch_sub(1, std::memory_order_relaxed);
         }
     }
 
-    std::cout << "Finished consumer..." << std::endl;
+    std::cout << "Finished consumer...\n";
 }
-
 int main() {
     counter = 0;
     std::thread producerThread(producer);
