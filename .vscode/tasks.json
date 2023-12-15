@@ -1,0 +1,22 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Custom task",
+            "type": "shell",
+            "command": "mingw32-make -f makefile",
+        },
+        {
+            "label": "init and run",
+            "type": "shell",
+            "command": "Start-Process -FilePath main.exe",
+            "dependsOn": "Custom task",
+            "options": {
+                "statusbar": {
+                    "label": "Run makefile",
+                    "color": "#3ff148"
+                }
+            }
+        }
+    ],
+}
